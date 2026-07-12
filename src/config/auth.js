@@ -31,6 +31,15 @@ export const authConfig = {
       return frontendUrl;
     },
   },
+  csrfToken: {
+    name: "authjs.csrf-token",
+    options: {
+      httpOnly: true,
+      sameSite: "none",
+      path: "/",
+      secure: true,
+    },
+  },
 };
 
 export const authHandler = ExpressAuth(authConfig);
