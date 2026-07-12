@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="text" name="rawlink" />
+    <button onclick="handleClick()" "submit">submit</button>
+    <ul id="list">
+    </ul>
+
+    <script>
+      const button = document.querySelector("button");
+      const urlList = document.getElementById("list")
+      async function handleClick() {
+        const rawlink = document.querySelector("input");
+        console.log(rawlink.value);
+
+        try{
+          const response = await fetch('http://localhost:3000/short', {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ value: rawlink.value })
+          })
+          const data = await response.text(); 
+          console.log(data)
+          localStorage.setItem('userData', data);
+          urlList.innerHTML = `<h1>${data}</h1>`
+        } catch(error){
+          console.error("error submitting", error)
+
+        }
+      }
+    </script>
+  </body>
+</html>
