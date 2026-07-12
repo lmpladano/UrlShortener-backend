@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:4000", // Allow requests only from your Next.js app
+    origin: process.env.FRONTEND_URL || "http://localhost:4000",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true, // Allow cookies or authorization headers if needed
   }),
