@@ -6,10 +6,14 @@ import urlList from "../src/routes/urlList.js";
 import deleter from "../src/routes/delete.js";
 
 const app = express();
+const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:4000").replace(
+  /\/+$/,
+  "",
+);
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:4000",
+    origin: frontendUrl,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true, // Allow cookies or authorization headers if needed
   }),

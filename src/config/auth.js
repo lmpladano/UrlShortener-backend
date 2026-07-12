@@ -4,7 +4,10 @@ import GitHub from "@auth/express/providers/github";
 import PostgresAdapter from "@auth/pg-adapter";
 import "dotenv/config";
 import { pool } from "../db.js";
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4000";
+const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:4000").replace(
+  /\/+$/,
+  "",
+);
 
 export const authConfig = {
   providers: [
