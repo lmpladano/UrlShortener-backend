@@ -1,26 +1,33 @@
-const { databasePlaceholder } = require("../dbMock");
-
-const express = require("express");
+import { pool } from "../db.js";
+import express from "express";
+import { authenticatedUser } from "../middleware/auth.js";
 const router = express.Router();
-const encoderController = require("../controllers/encoder");
+import handleEncode from "../controllers/encoder.js";
 
-router.post("/", encoderController.handleEncode);
+router.post("/", authenticatedUser, handleEncode);
 
-router.get("/", (req, res) => {
-  res.send(databasePlaceholder);
+router.get("/", authenticatedUser, async (req, res) => {
+  const userId = res.locals.session.user.id;
+  const record = await pool.query(
+    "SELECT * FROM public.links WHERE user_id = $1",
+    [userId],
+  );
+  res.send(record.rows);
 });
 
-router.get("/:slug", (req, res) => {
+router.get("/:slug", async (req, res) => {
   const userSlug = req.params.slug;
-  console.log(userSlug);
+  const record = await pool.query(
+    "SELECT * FROM public.links WHERE base62 = $1",
+    [userSlug],
+  );
 
-  const record = databasePlaceholder.find((item) => item.base62 === userSlug);
-
-  if (record) {
-    return res.redirect(record.original);
+  if (record.rows[0]) {
+    console.log(record.rows[0]);
+    return res.redirect(record.rows[0].original);
   } else {
     return res.status(404).send("Shortened URL not found");
   }
 });
 
-module.exports = router;
+export default router;

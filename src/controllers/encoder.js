@@ -1,4 +1,4 @@
-const { databasePlaceholder } = require("../dbMock");
+import { pool } from "../db.js";
 
 function encodeBase62(str) {
   const chars =
@@ -26,19 +26,35 @@ function encodeBase62(str) {
   return result.slice(0, 6);
 }
 
-exports.handleEncode = (req, res) => {
+const handleEncode = async (req, res) => {
   const rawlink = req.body.value;
+  const session = res.locals.session;
 
-  const encoded = encodeBase62(rawlink);
-  console.log(`${encoded}`);
+  const userId = session?.user?.id;
+  console.log(rawlink.rawlink);
+
+  const encoded = encodeBase62(rawlink.rawlink);
 
   const record = {
-    base62: encoded,
-    original: rawlink,
-    shortenedUrl: `http://localhost:3000/${encoded}`,
+    base62: rawlink.custom ? rawlink.custom : encoded,
+    original: rawlink.rawlink,
+    shortenedUrl: `http://localhost:3000/${rawlink.custom ? rawlink.custom : encoded}`,
   };
+  try {
+    const result = await pool.query(
+      "INSERT INTO public.links (user_id, base62, original, shortened) VALUES ($1, $2, $3, $4) RETURNING *",
 
-  databasePlaceholder.push(record);
+      [userId, record.base62, record.original, record.shortenedUrl],
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({ error: "Failed to save snippet" });
+  }
 
   res.json(record);
 };
+
+export default handleEncode;
