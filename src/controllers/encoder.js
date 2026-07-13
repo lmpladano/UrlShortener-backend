@@ -34,11 +34,15 @@ const handleEncode = async (req, res) => {
   console.log(rawlink.rawlink);
 
   const encoded = encodeBase62(rawlink.rawlink);
+  const base62 = rawlink.custom || encoded;
+  const publicBaseUrl = (
+    process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`
+  ).replace(/\/+$/, "");
 
   const record = {
-    base62: rawlink.custom ? rawlink.custom : encoded,
+    base62,
     original: rawlink.rawlink,
-    shortenedUrl: `http://localhost:3000/${rawlink.custom ? rawlink.custom : encoded}`,
+    shortenedUrl: `${publicBaseUrl}/${base62}`,
   };
   try {
     const result = await pool.query(
@@ -47,14 +51,12 @@ const handleEncode = async (req, res) => {
       [userId, record.base62, record.original, record.shortenedUrl],
     );
 
-    res.status(201).json(result.rows[0]);
+    return res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
 
-    res.status(500).json({ error: "Failed to save snippet" });
+    return res.status(500).json({ error: "Failed to save snippet" });
   }
-
-  res.json(record);
 };
 
 export default handleEncode;
