@@ -11,6 +11,17 @@ const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:4000").replac
   "",
 );
 
+// Render terminates TLS before forwarding requests to Express.
+app.set("trust proxy", true);
+
+// Auth.js builds OAuth callback URLs from the incoming Express request.
+// Keep the public auth origin on the Vercel proxy so its cookies remain
+// first-party in the browser.
+app.use("/auth", (req, _res, next) => {
+  req.headers.host = new URL(frontendUrl).host;
+  next();
+});
+
 app.use(
   cors({
     origin: frontendUrl,
